@@ -159,11 +159,11 @@ void Read_HTMLFile(char* string, int size, int pa)
 	 * */
 	for(i=1;i<size;i++)
 	{
-		if (string[i] == '<' && string[i+1] == 'a')
+		if (string[i] == '<')
 		{
-			if (string[i+3] == 'h' && string[i+4] == 'r' && string[i+13] == ':')
+			if (string[i+13] == ':')
 			{
-				if (string[i-1] == '>' && string[i-2] == 'r')
+				if (string[i-2] == 'r')
 				{
 					occurances[match] = i+9;
 					match += 1;	
@@ -226,7 +226,7 @@ int Determine_Number_Pages(char* string, int size)
 	{
 		if (string[i] == 'L')
 		{
-			if (string[i+3] == 't' && string[i+4] == '<')
+			if (string[i+4] == '<')
 			{
 				if (string[i-2] == '"')
 				{
