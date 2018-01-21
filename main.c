@@ -161,16 +161,13 @@ void Read_HTMLFile(char* string, int size, int pa)
 	{
 		if (string[i] == '<' && string[i+1] == 'a')
 		{
-			if (string[i+3] == 'h' && string[i+4] == 'r')
+			if (string[i+3] == 'h' && string[i+4] == 'r' && string[i+13] == ':')
 			{
-				if (string[i+13] == ':')
+				if (string[i-1] == '>' && string[i-2] == 'r')
 				{
-						if (string[i-1] == '>' && string[i-2] == 'r')
-						{
-							occurances[match] = i+9;
-							match += 1;	
-							//printf("Found Image Link at %d\n", i);
-						}
+					occurances[match] = i+9;
+					match += 1;	
+					//printf("Found Image Link at %d\n", i);
 				}
 			}
 		}
