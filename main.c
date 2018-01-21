@@ -24,10 +24,18 @@ void Download_file(const char* url, const char* file_name, int tor)
 	
 	handle = curl_easy_init();
 	
-	if (tor == 1)
+	if (tor > 0)
 	{
 		curl_easy_setopt(handle, CURLOPT_PROXY, "socks4a://127.0.0.1"); 
-		curl_easy_setopt(handle, CURLOPT_PROXYPORT, 9150);
+		switch(tor)
+		{
+			case 1:
+				curl_easy_setopt(handle, CURLOPT_PROXYPORT, 9050);
+			break;
+			case 2:
+				curl_easy_setopt(handle, CURLOPT_PROXYPORT, 9150);
+			break;
+		}
 	}
 
 	curl_easy_setopt( handle, CURLOPT_URL, url ) ;
@@ -296,8 +304,13 @@ int main(int argc, char** argv)
 
 	if (argv[2][0] = 't')
 	{
-		printf("Tor proxy\n");
+		printf("Tor proxy (port 9050)\n\n");
 		tor = 1;
+	}
+	else if (argv[2][1] = 'b')
+	{
+		printf("Tor proxy (Browser, port 9150)\n\n");
+		tor = 2;	
 	}
 	
 	/* Create Folder img for storing our images and tmp for the html files */
