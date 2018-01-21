@@ -163,17 +163,14 @@ void Read_HTMLFile(char* string, int size, int pa)
 		{
 			if (string[i+3] == 'h' && string[i+4] == 'r')
 			{
-				if (string[i+5] == 'e' && string[i+6] == 'f' && string[i+9] == 'h')
+				if (string[i+13] == ':')
 				{
-					if (string[i+10] == 't' && string[i+11] == 't' && string[i+12] == 'p' && string[i+13] == ':')
-					{	
 						if (string[i-1] == '>' && string[i-2] == 'r')
 						{
 							occurances[match] = i+9;
 							match += 1;	
 							//printf("Found Image Link at %d\n", i);
 						}
-					}
 				}
 			}
 		}
@@ -209,7 +206,7 @@ void Read_HTMLFile(char* string, int size, int pa)
 	
 	for(a=0;a<match;a++)
 	{
-		if (a > 0) printf("Progress : %d/%d\n", a, match);
+		printf("Progress : %d/%d\n", a, match);
 		Download_file(image_links[a], image_filename[a], tor) ;
 	}
 	
@@ -232,7 +229,7 @@ int Determine_Number_Pages(char* string, int size)
 	{
 		if (string[i] == 'L')
 		{
-			if (string[i+1] == 'a' && string[i+2] == 's' && string[i+3] == 't' && string[i+4] == '<')
+			if (string[i+3] == 't' && string[i+4] == '<')
 			{
 				if (string[i-2] == '"')
 				{
@@ -302,16 +299,17 @@ int main(int argc, char** argv)
 		printf("Link : %s\n", tag_str);
 	}
 
-	if (argv[2][0] = 't')
-	{
-		printf("Tor proxy (port 9050)\n\n");
-		tor = 1;
-	}
-	else if (argv[2][1] = 'b')
+	if (argv[2][1] = 'b')
 	{
 		printf("Tor proxy (Browser, port 9150)\n\n");
 		tor = 2;	
 	}
+	else if (argv[2][0] = 't')
+	{
+		printf("Tor proxy (port 9050)\n\n");
+		tor = 1;
+	}
+
 	
 	/* Create Folder img for storing our images and tmp for the html files */
 	mkdir("img", 0755);
@@ -333,10 +331,10 @@ int main(int argc, char** argv)
 		printf("Downloading %d pages\n", pages);
 		for(i=2;i<=pages;i++)
 		{
+			printf("Progress : %d/%d\n", i, pages);
 			snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/%d", argv[1], i);
 			snprintf(page_str, sizeof(page_str), "tmp/page%d.html", i);
 			Download_file(tag_str, page_str, tor) ;
-			printf("Progress : %d/%d\n", i, pages);
 		}
 	}
 	//Write_File("1.html", str, sz);
