@@ -4,13 +4,14 @@
 #include <curl/curl.h>
 #include <unistd.h>
 
+int state_gui = 0;
+
 /* This will be used to store where our images are in the HTML files */
 int occurances[256];
 /* This will store our URLs. I've noticed some urls can break the 256 barrier so i increased it to 512. */
 char image_links[256][512];
 /* This will store our filename, we can't assign the URLs as the filename*/
 char image_filename[256][512];
-
 const char ascii_chars[11] = {'0', '1', '2', '3','4','5','6','7','8','9'};
 
 int tor = 0;
@@ -161,9 +162,9 @@ void Read_HTMLFile(char* string, int size, int pa)
 	{
 		if (string[i] == '<')
 		{
-			if (string[i+13] == ':')
+			if (string[i+1] == 'a' && string[i+3] == 'h')
 			{
-				if (string[i-2] == 'r')
+				if (string[i-3] == 'b' && string[i-2] == 'r' && string[i-6] == 'a')
 				{
 					occurances[match] = i+9;
 					match += 1;	
@@ -183,7 +184,7 @@ void Read_HTMLFile(char* string, int size, int pa)
 		image_links[a][0] = string[occurances[a]];
 		for(i=1;i<256;i++)
 		{
-			if (string[occurances[a]+i] == '"')
+			if (string[occurances[a]+i] == '"' && string[occurances[a]+i+1] == '>')
 			{
 				image_links[a][i+1] = '\n';
 				break;
@@ -296,12 +297,12 @@ int main(int argc, char** argv)
 		printf("Link : %s\n", tag_str);
 	}
 
-	if (argv[2][1] = 'b')
+	if (argv[2][1] == 'b' && argv[2][0] == 't')
 	{
 		printf("Tor proxy (Browser, port 9150)\n\n");
 		tor = 2;	
 	}
-	else if (argv[2][0] = 't')
+	else if (argv[2][0] == 't')
 	{
 		printf("Tor proxy (port 9050)\n\n");
 		tor = 1;
@@ -318,7 +319,7 @@ int main(int argc, char** argv)
 	sz = Get_Filesize("tmp/page1.html");
 	str = malloc(sz);
 	str = Read_File("tmp/page1.html", sz);
-	
+
 	/* From the first page, determine how many pages are available for the tag */
 	pages = Determine_Number_Pages(str, sz);
 	
