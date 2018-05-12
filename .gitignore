@@ -1,0 +1,6 @@
+check.sh
+sdl.c
+err.txt
+img/
+tmp/
+Makefile.mingw

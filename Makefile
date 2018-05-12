@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -O2
+CFLAGS = -Ofast -march=native -mtune=native
 LDFLAGS = -lcurl
 OUTPUT = rule34curl
 

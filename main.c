@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 int state_gui = 0;
@@ -17,6 +19,12 @@ const char ascii_chars[11] = {'0', '1', '2', '3','4','5','6','7','8','9'};
 int tor = 0;
 int pages = 1;
 
+#ifdef WINDOWS
+#define create_directory(a,x) mkdir(a)
+#else
+#define create_directory(a,x) mkdir(a,x)
+#endif
+
 /* We'll use libCURL for downloading the file. It should be possible to use any other alternatives too. */
 void Download_file(const char* url, const char* file_name, int tor)
 {
@@ -27,6 +35,7 @@ void Download_file(const char* url, const char* file_name, int tor)
 	
 	if (tor > 0)
 	{
+		/* It's safer to use Socks4a for Tor as Socks5 might leak DNS without some proper handling */
 		curl_easy_setopt(handle, CURLOPT_PROXY, "socks4a://127.0.0.1"); 
 		switch(tor)
 		{
@@ -58,13 +67,13 @@ int Get_Filesize(const char* filepath)
 	FILE* fi;
 	long sz;
 	fi = fopen(filepath, "r");
-	if (fi == NULL) return 0;
+	if (!fi) return 0;
 	
 	fseek(fi, 0L, SEEK_END);
 	sz = ftell(fi);
 	fseek(fi, 0L, SEEK_SET);
 	
-	if (fi == NULL) fclose(fi);
+	fclose(fi);
 	
 	return sz;
 }
@@ -73,24 +82,13 @@ int Get_Filesize(const char* filepath)
 char* Read_File(const char* filepath, int size)
 {
 	FILE* fi;
-	char *str, *tmp, *tmp2;
+	char *str;
 	
 	fi = fopen(filepath, "r");
-	if (fi == NULL) return "";
-	
+	if (!fi) return "";
 	str = malloc(size);
-	tmp = malloc(size);
-	tmp2 = malloc(size);
-	
-	while(fgets (tmp , size , fi)) 
-	{
-		snprintf(tmp2, size, "%s", str); 
-		snprintf(str, size, "%s%s", tmp2, tmp);
-	}
-
-	if (fi != NULL) fclose(fi);
-	if (tmp != NULL) free(tmp);
-	if (tmp2 != NULL) free(tmp2);
+	fread(str, 1, size, fi);
+	fclose(fi);
 	
 	return str;
 }
@@ -150,7 +148,8 @@ void Read_HTMLFile(char* string, int size, int pa)
 {
 	int i, a;
 	int match;
-	int result;
+	unsigned short result;
+	char* tmp_str;
 	match = 0;
 
 	/* This is the code that crawls through the HTTP file and tries to find the magic 
@@ -186,7 +185,6 @@ void Read_HTMLFile(char* string, int size, int pa)
 		{
 			if (string[occurances[a]+i] == '"' && string[occurances[a]+i+1] == '>')
 			{
-				image_links[a][i+1] = '\n';
 				break;
 			}
 			image_links[a][i] = string[occurances[a]+i];
@@ -198,7 +196,9 @@ void Read_HTMLFile(char* string, int size, int pa)
 	for(a=0;a<match;a++)
 	{
 		result = Find_last_character(image_links[a], 256, '/');
-		snprintf(image_filename[a], 256-result, "img/%s", Return_String(image_links[a], 256, result+1));
+		tmp_str = Return_String(image_links[a], 256, result);
+		snprintf(image_filename[a], 256-result, "img/%s", tmp_str);
+		free(tmp_str);
 		//printf("Filename : %s\n", image_filename[a]);
 	}
 	
@@ -208,6 +208,12 @@ void Read_HTMLFile(char* string, int size, int pa)
 		Download_file(image_links[a], image_filename[a], tor) ;
 	}
 	
+	/* Make sure to empty the arrays to 0 to avoid leftovers */
+	for(a=0;a<match;a++)
+	{
+		memset(image_links[a], 0, sizeof(image_links[a]));
+		memset(image_filename[a], 0, sizeof(image_filename[a]));
+	}
 }
 
 /* This was slightly more tricky than i expected because i need to convert them to decimals
@@ -275,7 +281,6 @@ int Determine_Number_Pages(char* string, int size)
 int main(int argc, char** argv)
 {
 	long long sz;
-	FILE* fi;
 	char *str;
 	int i;
 	char tag_str[256];
@@ -310,14 +315,13 @@ int main(int argc, char** argv)
 
 	
 	/* Create Folder img for storing our images and tmp for the html files */
-	mkdir("img", 0755);
-	mkdir("tmp", 0755);
+	create_directory("img", 0755);
+	create_directory("tmp", 0755);
 	
 	/* We need to download the first page to determine how many pages are available */
 	Download_file(tag_str, "tmp/page1.html", tor) ;
 
 	sz = Get_Filesize("tmp/page1.html");
-	str = malloc(sz);
 	str = Read_File("tmp/page1.html", sz);
 
 	/* From the first page, determine how many pages are available for the tag */
