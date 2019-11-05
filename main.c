@@ -302,17 +302,19 @@ int main(int argc, char** argv)
 		printf("Link : %s\n", tag_str);
 	}
 
-	if (argv[2][1] == 'b' && argv[2][0] == 't')
+	if (argc > 2)
 	{
-		printf("Tor proxy (Browser, port 9150)\n\n");
-		tor = 2;	
+		if (argv[2][1] == 'b' && argv[2][0] == 't')
+		{
+			printf("Tor proxy (Browser, port 9150)\n\n");
+			tor = 2;	
+		}
+		else if (argv[2][0] == 't')
+		{
+			printf("Tor proxy (port 9050)\n\n");
+			tor = 1;
+		}
 	}
-	else if (argv[2][0] == 't')
-	{
-		printf("Tor proxy (port 9050)\n\n");
-		tor = 1;
-	}
-
 	
 	/* Create Folder img for storing our images and tmp for the html files */
 	create_directory("img", 0755);
