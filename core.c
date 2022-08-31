@@ -49,6 +49,10 @@ void Download_file(const char* url, const char* file_name, int tor)
 	}
 
 	curl_easy_setopt( handle, CURLOPT_URL, url ) ;
+	
+#ifndef NO_DNS_DOH
+	curl_easy_setopt(handle, CURLOPT_DOH_URL, "https://doh.opendns.com/dns-query");
+#endif
 
 	file = fopen( file_name, "w");
 
