@@ -1,10 +1,10 @@
 CC = gcc
 
-CFLAGS = -Ofast -march=native -mtune=native
+CFLAGS = -Wall -Wextra -Ofast -march=native -mtune=native
 LDFLAGS = -lcurl
 OUTPUT = rule34curl
 
-SOURCES = main.c
+SOURCES = core.c cli.c
 OBJS = ${SOURCES:.c=.o}
 
 ${OUTPUT}:${OBJS}
