@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -Ofast -march=native -mtune=native
 LDFLAGS = -lcurl -lSDL -lSDL_image -lSDL_ttf
 OUTPUT = rule34curl
 
-SOURCES = core.c SDL_gui.c
+SOURCES = core.c SDL_gui.c SDL_gui_lib.c
 OBJS = ${SOURCES:.c=.o}
 
 ${OUTPUT}:${OBJS}
