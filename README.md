@@ -63,8 +63,10 @@ Controls
 ========
 
 A : Select a letter or number in the virtual keyboard OR download full picture when in view mode.
+
 B : Delete a letter or number OR go back to virtual keyboard.
 
-L/R : Switch pages
-X/Y : Switch pages for thumbnails
+L/R : Switch pages (1-X)
+
+X/Y : Switch pages for the images (generally from 0 to 70)
 
