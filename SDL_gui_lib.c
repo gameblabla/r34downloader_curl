@@ -11,26 +11,13 @@ SDL_Surface *screen;
 #include "INPUT.h"
 struct input BUTTON;
 
-#define Buttons_UP SDLK_UP
-#define Buttons_LEFT SDLK_LEFT
-#define Buttons_RIGHT SDLK_RIGHT
-#define Buttons_DOWN SDLK_DOWN
-#define Buttons_A SDLK_x
-#define Buttons_B SDLK_c
-#define Buttons_C SDLK_v
-#define Buttons_D SDLK_b
-#define Buttons_START SDLK_SPACE
-#define Buttons_SELECT SDLK_BACKSPACE
-#define Buttons_QUIT SDLK_ESCAPE
-
-#define Joypad_A 0 
-#define Joypad_B 1
-#define Joypad_C 2
-#define Joypad_D 3
-#define Joypad_START 7
-#define Joypad_SELECT 5 
-
 int done = 0;
+
+void Init_Video()
+{
+	SDL_Init( SDL_INIT_VIDEO );
+	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);	
+}
 
 void Load_Image(unsigned short a, const char* directory)
 {
@@ -39,12 +26,44 @@ void Load_Image(unsigned short a, const char* directory)
 	{
 		SDL_FreeSurface(sprites_img[a]);
 	}
-
 	tmp = IMG_Load(directory);
 	SDL_SetColorKey(tmp, (SDL_SRCCOLORKEY | SDL_RLEACCEL), SDL_MapRGB(tmp->format, 255, 0, 255));
-
-	sprites_img[a] = SDL_DisplayFormatAlpha(tmp);
+	sprites_img[a] = SDL_DisplayFormat(tmp);
 	SDL_FreeSurface(tmp);
+}
+
+void Load_Image_Stretch(unsigned short a, const char* directory, short w, short h)
+{
+	SDL_Surface *tmp, *tmp2;
+	
+	SDL_Rect position;
+	position.x = 0;
+	position.y = 0;
+
+	SDL_Rect frame;
+	frame.x = 0;
+	frame.y = 0;
+	frame.w = w;
+	frame.h = h;
+	
+	if (sprites_img[a] != NULL)
+	{
+		SDL_FreeSurface(sprites_img[a]);
+	}
+	tmp = IMG_Load(directory);
+	position.w = tmp->w;
+	position.h = tmp->h;
+	sprites_img[a] = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 16, 0,0,0,0);
+	tmp2 = SDL_DisplayFormat(tmp);
+	//sprites_img[a] = SDL_DisplayFormat(tmp2);
+	int err = SDL_SoftStretch(tmp2, &position, sprites_img[a], &frame);
+	if (err < 0)
+	{
+		printf("Error number : %d.\n%s\n", err, SDL_GetError());
+	}
+	
+	SDL_FreeSurface(tmp);
+	SDL_FreeSurface(tmp2);
 }
 
 
@@ -56,6 +75,23 @@ void Put_image(unsigned short a, short x, short y)
 	SDL_BlitSurface(sprites_img[a], NULL, screen, &position);
 }
 
+void Put_image_scaled(unsigned short a, short x, short y, short w, short h)
+{
+	SDL_Rect position;
+	position.x = x;
+	position.y = y;
+	position.w = sprites_img[a]->w;
+	position.h = sprites_img[a]->h;
+	
+	SDL_Rect frame;
+	frame.x = 0;
+	frame.y = 0;
+	frame.w = w;
+	frame.h = h;
+	
+	//bitmap_scale(0, 0, sprites_img[a]->w, sprites_img[a]->h, w, h, sprites_img[a]->w, 0, (uint32_t*)sprites_img[a]->pixels, (uint32_t*)screen->pixels);
+	SDL_SoftStretch(sprites_img[a], &position, screen, &frame);
+}
 
 void Put_sprite(unsigned short a, short x, short y, unsigned short w, unsigned short h, unsigned short f)
 {

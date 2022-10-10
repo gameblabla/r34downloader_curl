@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Wall -Wextra -Ofast -march=native -mtune=native
+CFLAGS = -Wall -Wextra -O0 -g3
 LDFLAGS = -lcurl -lSDL -lSDL_image -lSDL_ttf
 OUTPUT = rule34curl
 

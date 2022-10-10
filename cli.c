@@ -8,6 +8,11 @@
 
 #include "core.h"
 
+void Update_Progress(int a, int match)
+{
+	printf("Progress : %d/%d\n", a, match);	
+}
+
 int main(int argc, char** argv)
 {
 	long long sz;

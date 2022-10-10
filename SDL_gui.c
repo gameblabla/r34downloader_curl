@@ -14,10 +14,18 @@
 #include "INPUT.h"
 
 char text_buffer[64];
+char tag_str[256];
+char page_str[128];
+char tmp_str[512];
+
+char img_tmp_str[71][512];
 
 int player_x  = 0;
 int player_y = 0;
 int delay_input = 0;
+int Game_State = 0;
+
+
 
 char rows_of_text[3][27] = 
 {
@@ -94,56 +102,167 @@ void Virtual_Keyboard()
 	{
 		Delete_Character_Keyboard();
 	}
+	
+	if (BUTTON.START)
+	{
+		int size;
+		size = strlen(text_buffer); //Total size of string
+		if (size > 0)
+		{
+			Game_State = 1;
+		}
+	}
 }
 
 void Draw_Virtual_Keyboard()
 {
 	int i;
 	// Draw Virtual keyboard
-	Faster_clearing(12, 350, 640-24, 120, 0x0000FF);
+	Faster_clearing(12, 350, 640-24, 120, BLUE_COLOR_BG);
 	for(i=0;i<3;i++)
 	{
 		Print_text(16, 360+(i*30), 23, rows_of_text[i]);
 	}
 	Print_text(280, 450, 23, "[OK]");
 }
+
+void Update_Progress(int a, int match, int all_match, char* img_filename)
+{
+	char tmp2_str[512];
+	Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);
+	Print_text(32, 120, 20, "Downloading images on page...");
+	Print_text(32, 180, 20, "Please wait !");
+	
+	snprintf(img_tmp_str[a], sizeof(img_tmp_str[a]), "%s", img_filename);
+	
+	// Display progress of downloads
+	snprintf(tmp2_str, sizeof(tmp2_str), "Image %d/%d, Total is %d", a, match, all_match);
+	Print_text(32, 250, 20, tmp2_str);
+	
+	// Display Image filename
+	Print_text(32, 350, 20, img_tmp_str[a]);
+	
+	Update_video();
+}
+
+void Move_Cursor()
+{	
+	if (BUTTON.UP) player_y -= 3;
+	else if (BUTTON.DOWN) player_y += 3;
+				
+	if (BUTTON.LEFT) player_x -= 3;
+	else if (BUTTON.RIGHT) player_x += 3;
+}
+
+void Draw_Cursor()
+{	
+	// Draw cursor
+	Put_image(510, player_x, player_y);
+}
+
+void Download_Images(int page_number, int offset_start, int offset_max)
+{
+	int i;
+	size_t sz;
+	char* str;
+	Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);
+	Print_text(32, 120, 20, "Downloading images on page...");
+	Print_text(32, 180, 20, "Please wait !");
+	Update_video();
+
+	printf("Tag is %s\n", text_buffer);
+	snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/1", text_buffer);
+
+	printf("Link : %s\n", tag_str);
+
+	// Step 2
+
+	/* Create Folder img for storing our images and tmp for the html files.
+	 * img is for the permanent image folder
+	 * tmp is for the HTML files
+	*/
+	create_directory("img", 0755);
+	create_directory("tmp", 0755);
+
+	snprintf(tmp_str, sizeof(tmp_str), "tmp/%s-page%d.html", text_buffer, page_number);
+	// Don't redownload cached HTML file again
+	if (access(tmp_str, F_OK) != 0)
+	{
+		/* We need to download the first page to determine how many pages are available */
+		Download_file(tag_str, tmp_str, page_number);
+	}
+	sz = Get_Filesize(tmp_str);
+	str = Read_File(tmp_str, sz);
+	/* From the first page, determine how many pages are available for the tag */
+	pages = Determine_Number_Pages(str, sz);
+
+	Read_HTMLFile(str, sz, 0, offset_start, offset_max);
+
+	Game_State = 2;
+
+	for(i=0;i<offset_max;i++)
+	{
+		Load_Image_Stretch(10+i, img_tmp_str[i], 200, 200);
+	}	
+}
 		
 int main(int argc, char** argv)
 {
-	SDL_Init( SDL_INIT_VIDEO );
-	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
+	int i;
+
+	Init_Video();
 	
 	snprintf(text_buffer, sizeof(text_buffer), "Sonic_the_Hedgehog");
 	
 	Load_Image(510, "internal_img/cursor.bmp");
-	Load_Image(511, "internal_img/font.png");
+	Load_Image(511, "internal_img/font.bmp");
 
 	while(!BUTTON.QUIT)
 	{
 		Controls();
 		
-		Faster_clearing(0, 0, 640, 480, 0xFFFFFF);
-		
-		if (BUTTON.UP) player_y -= 3;
-		else if (BUTTON.DOWN) player_y += 3;
-		
-		if (BUTTON.LEFT) player_x -= 3;
-		else if (BUTTON.RIGHT) player_x += 3;
-		
-		if (delay_input > 10)
+		switch(Game_State)
 		{
-			Virtual_Keyboard();
+			// Search
+			case 0:
+				Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);
+				
+				if (delay_input > 10)
+				{
+					Virtual_Keyboard();
+				}
+				
+				delay_input++;
+				
+				Print_text(32, 50, 20, "Search for a character");
+				
+				// Print text that's in buffer
+				Print_text(32, 120, 20, text_buffer);
+				
+				Draw_Virtual_Keyboard();
+				
+				Move_Cursor();
+				Draw_Cursor();
+
+			break;
+			case 1:
+				Download_Images(0, 0, 6);
+			break;
+			case 2:
+				Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);
+				
+				for(i=0;i<3;i++)
+				{
+					Put_image(10 + i, 10 + (i * 210), 40);
+					Put_image(13 + i, 10 + (i * 210), 250);
+				}
+
+				Move_Cursor();
+				Draw_Cursor();
+			break;
 		}
 		
-		delay_input++;
-		
-		// Print text that's in buffer
-		Print_text(32, 20, 20, text_buffer);
-		
-		Draw_Virtual_Keyboard();
-		
-		// Draw cursor
-		Put_image(510, player_x, player_y);
+
 		
 		Update_video();
 	}

@@ -10,6 +10,9 @@
 #define MAX_IMAGE 512
 extern const float real_FPS;
 
+#define WHITE_COLOR_BG SDL_MapRGB(screen->format, 255, 255, 255)
+#define BLUE_COLOR_BG SDL_MapRGB(screen->format, 0, 0, 255)
+
 extern SDL_Surface *sprites_img[MAX_IMAGE];
 extern SDL_Surface *screen;
 
@@ -36,9 +39,15 @@ extern struct input BUTTON;
 
 extern int done;
 
+extern void Init_Video();
+
 extern void Load_Image(unsigned short a, const char* directory);
 
+extern void Load_Image_Stretch(unsigned short a, const char* directory, short w, short h);
+
 extern void Put_image(unsigned short a, short x, short y);
+
+extern void Put_image_scaled(unsigned short a, short x, short y, short w, short h);
 
 extern void Put_sprite(unsigned short a, short x, short y, unsigned short w, unsigned short h, unsigned short f);
 

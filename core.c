@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "core.h"
 
 int state_gui = 0;
 
@@ -148,12 +149,15 @@ int Find_last_character(char* str, int size, char character)
 /* The main function C:, deals with detecting where the links are, filling them in memory and then proceed to download them 
  * For multiple pages, we'll just put this in a loop.
  * */
-void Read_HTMLFile(char* string, int size, int pa)
+void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end)
 {
 	int i, a;
 	int match;
 	unsigned short result;
 	char* tmp_str;
+	
+	int new_match;
+	
 	match = 0;
 
 	/* This is the code that crawls through the HTTP file and tries to find the magic 
@@ -206,14 +210,25 @@ void Read_HTMLFile(char* string, int size, int pa)
 		//printf("Filename : %s\n", image_filename[a]);
 	}
 	
-	for(a=0;a<match;a++)
+	/* If an end offset is set, set it to that. otherwise, download everything. */
+	new_match = match;
+	if (offset_end != 0)
 	{
-		printf("Progress : %d/%d\n", a, match);
-		Download_file(image_links[a], image_filename[a], tor) ;
+		new_match = offset_end;
+	}
+	
+	for(a=offset_start;a<new_match;a++)
+	{
+		Update_Progress(a, new_match, match, image_filename[a]);
+		// Don't download the image again if it's already downloaded/cached
+		if (access(image_filename[a], F_OK) != 0)
+		{
+			Download_file(image_links[a], image_filename[a], tor) ;
+		}
 	}
 	
 	/* Make sure to empty the arrays to 0 to avoid leftovers */
-	for(a=0;a<match;a++)
+	for(a=offset_start;a<new_match;a++)
 	{
 		memset(image_links[a], 0, sizeof(image_links[a]));
 		memset(image_filename[a], 0, sizeof(image_filename[a]));
