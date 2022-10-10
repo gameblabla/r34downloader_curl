@@ -208,16 +208,16 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 
 	if (type == 1)
 	{
-		for(i=offset_start;i<offset_max;i++)
+		for(i=0;i<6;i++)
 		{
-			Load_Image_Stretch(10+i, thumbnail_image_filename[i], 200, 200);
+			Load_Image_Stretch(10+i, img_tmp_str[offset_start+i], 200, 200);
 		}	
 	}
 	else
 	{
-		for(i=offset_start;i<offset_max;i++)
+		for(i=0;i<6;i++)
 		{
-			Load_Image_Stretch(10+i, image_filename[i], 200, 200);
+			Load_Image_Stretch(10+i, image_filename[offset_start+i], 200, 200);
 		}	
 	}
 		
@@ -267,7 +267,7 @@ int main(int argc, char** argv)
 			break;
 			case 1:
 				// First page, from 0 to 6
-				Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 0);
+				Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
 			break;
 			case 2:
 				Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);

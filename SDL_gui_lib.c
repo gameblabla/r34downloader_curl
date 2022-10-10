@@ -50,7 +50,25 @@ void Load_Image_Stretch(unsigned short a, const char* directory, short w, short 
 	{
 		SDL_FreeSurface(sprites_img[a]);
 	}
-	tmp = IMG_Load(directory);
+	
+	printf("Image : %s\n", directory);
+	
+	if (strstr(directory, ".webm") || strstr(directory, ".mp4"))
+	{
+		
+		tmp = IMG_Load("internal_img/stub.bmp");
+	}
+	else
+	{
+		tmp = IMG_Load(directory);
+	}
+	
+	if (!tmp)
+	{
+		printf("Error : %s\n", SDL_GetError());
+		return;
+	}
+	
 	position.w = tmp->w;
 	position.h = tmp->h;
 	sprites_img[a] = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0,0,0,0);
