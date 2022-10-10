@@ -46,7 +46,7 @@ void Load_Image_Stretch(unsigned short a, const char* directory, short w, short 
 	frame.w = w;
 	frame.h = h;
 	
-	if (sprites_img[a] != NULL)
+	if (sprites_img[a])
 	{
 		SDL_FreeSurface(sprites_img[a]);
 	}
@@ -87,6 +87,8 @@ void Load_Image_Stretch(unsigned short a, const char* directory, short w, short 
 
 void Put_image(unsigned short a, short x, short y)
 {
+	if (!sprites_img[a]) return;
+	
 	SDL_Rect position;
 	position.x = x;
 	position.y = y;
@@ -210,9 +212,10 @@ void Controls()
 
 void Clear_Image(unsigned short a)
 {
-	if (sprites_img[a])
+	if (sprites_img[a] != NULL)
 	{
 		SDL_FreeSurface(sprites_img[a]);
+		sprites_img[a] = NULL;
 	}
 }
 
@@ -225,6 +228,7 @@ void Clear_Images()
 		if (sprites_img[i])
 		{
 			SDL_FreeSurface(sprites_img[i]);
+			sprites_img[i] = NULL;
 		}
 	}
 }

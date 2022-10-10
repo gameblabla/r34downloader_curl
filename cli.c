@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "core.h"
+#include "common.h"
 
 void Update_Progress(int a, int match, int all_match, char* img_filename)
 {
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
 		for(i=2;i<=pages;i++)
 		{
 			printf("Progress : %d/%d\n", i, pages);
-			snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/%d", argv[1], i);
+			snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "post/list/%s/%d", argv[1], i);
 			snprintf(page_str, sizeof(page_str), "tmp/%s-page%d.html", argv[1], i);
 			Download_file(tag_str, page_str, tor) ;
 		}

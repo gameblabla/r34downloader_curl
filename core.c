@@ -26,6 +26,7 @@ const char ascii_chars[11] = {'0', '1', '2', '3','4','5','6','7','8','9'};
 
 int tor = 0;
 int pages = 1;
+int total_images = 0;
 
 #ifdef WINDOWS
 #define create_directory(a,x) mkdir(a)
@@ -282,6 +283,8 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 			Download_file(cur_links, cur_filename, tor) ;
 		}
 	}
+	
+	total_images = match;
 	
 	/* Make sure to empty the arrays to 0 to avoid leftovers */
 	/*for(a=offset_start;a<new_match;a++)

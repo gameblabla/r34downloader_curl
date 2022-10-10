@@ -13,6 +13,8 @@
 #include "SDL_gui_lib.h"
 #include "INPUT.h"
 
+#include "common.h"
+
 char text_buffer[64];
 char tag_str[256];
 char page_str[128];
@@ -175,11 +177,18 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 
 	printf("offset_start %d\n", offset_start);
 	printf("offset_max %d\n", offset_max);
+	
+	if (offset_max > 70)
+	{
+		offset_max = 70;
+	}
 
 	printf("Tag is %s\n", text_buffer);
-	snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/1", text_buffer);
+	
+	/* The +1 is needed as page 0 on the actual website does not exist */
+	snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "/post/list/%s/%d", text_buffer, overall_page+1);
 
-	printf("Link : %s\n", tag_str);
+	printf("Current page : %d\n", overall_page);
 
 	// Step 2
 
@@ -191,7 +200,7 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 	create_directory("thumb", 0755);
 	create_directory("tmp", 0755);
 
-	snprintf(tmp_str, sizeof(tmp_str), "tmp/%s-page%d.html", text_buffer, page_number);
+	snprintf(tmp_str, sizeof(tmp_str), "tmp/%s-page%d.html", text_buffer, overall_page);
 	// Don't redownload cached HTML file again
 	if (access(tmp_str, F_OK) != 0)
 	{
@@ -204,18 +213,24 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 	/* From the first page, determine how many pages are available for the tag */
 	pages = Determine_Number_Pages(str, sz);
 
-	Read_HTMLFile(str, sz, 0, offset_start, offset_max, type);
+	Read_HTMLFile(str, sz, overall_page, offset_start, offset_max, type);
+	
+	for(i=0;i<6;i++)
+	{
+		Clear_Image(10+i);
+	}
 
 	if (type == 1)
 	{
-		for(i=0;i<6;i++)
+		printf("offset_max-offset_start %d\n", offset_max);
+		for(i=0;i<offset_max-offset_start;i++)
 		{
-			Load_Image_Stretch(10+i, img_tmp_str[offset_start+i], 200, 200);
+			Load_Image_Stretch(10+i, thumbnail_image_filename[offset_start+i], 200, 200);
 		}	
 	}
 	else
 	{
-		for(i=0;i<6;i++)
+		for(i=0;i<offset_max-offset_start;i++)
 		{
 			Load_Image_Stretch(10+i, image_filename[offset_start+i], 200, 200);
 		}	
@@ -262,8 +277,8 @@ int main(int argc, char** argv)
 				Move_Cursor();
 				Draw_Cursor();
 				
-				current_thumbnail_page = 1;
-
+				current_thumbnail_page = 0;
+				current_overall_page = 0;
 			break;
 			case 1:
 				// First page, from 0 to 6
@@ -277,21 +292,57 @@ int main(int argc, char** argv)
 					Put_image(10 + i, 10 + (i * 210), 40);
 					Put_image(13 + i, 10 + (i * 210), 250);
 				}
-				
-				if (BUTTON.X && current_thumbnail_page > 0) // Previous
-				{
-					current_thumbnail_page-= 1;
-					Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
-				}
-				
-				if (BUTTON.Y) // Previous
-				{
-					current_thumbnail_page+= 1;
-					Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
-				}
 
 				Move_Cursor();
 				Draw_Cursor();
+				
+				delay_input++;
+				
+				if (delay_input > 10)
+				{
+					if (BUTTON.X) // Previous
+					{
+						if (current_thumbnail_page > 0)
+						{
+							current_thumbnail_page-= 1;
+							printf("current_thumbnail_page %d\n", current_thumbnail_page);
+							Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
+						}
+						delay_input = 0;
+					}
+					else if (BUTTON.Y) // Previous
+					{
+						if (current_thumbnail_page < 11)
+						{
+							current_thumbnail_page+= 1;
+							printf("current_thumbnail_page %d\n", current_thumbnail_page);
+							Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
+						}
+						delay_input = 0;
+					}
+					
+					if (BUTTON.L) // Previous
+					{
+						if (current_overall_page > 0)
+						{
+							current_overall_page--;
+							current_thumbnail_page = 0;
+							Game_State = 1;
+						}
+						delay_input = 0;
+					}
+					else if (BUTTON.R) // Previous
+					{
+						if (current_overall_page < pages)
+						{
+							current_overall_page++;
+							current_thumbnail_page = 0;
+							Game_State = 1;
+						}
+						delay_input = 0;
+					}
+				}
+				
 			break;
 		}
 		

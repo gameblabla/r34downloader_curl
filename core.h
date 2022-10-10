@@ -16,6 +16,7 @@ extern char thumbnail_image_filename[256][512];
 
 extern int tor;
 extern int pages;
+extern int total_images;
 
 #ifdef WINDOWS
 #define create_directory(a,x) mkdir(a)
