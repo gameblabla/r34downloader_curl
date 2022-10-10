@@ -1,0 +1,59 @@
+SDL GUI TODO LIST
+==================
+
+- Thumbnails
+Make it so it downloads the thumbnails instead.
+We will still retrieve the links to the full pictures.
+Then, we can download the full picture as an option for the user.
+
+This would have the advantage of not having to download very big images or videos.
+This would also avoid us of accidentally downloading animated GIFs or WebMs files instead and potentially
+causing issues as the website provides thumbnails for those also.
+
+The thumbnails are also a lot more lightweight and for the eventual Dreamcast and Gamecube port,
+this would be a lot smaller to download. (not to mention, less RAM usage for things we actually need)
+This is especially true on the Dreamcast with its modem.
+
+- Animated GIF support
+
+Enough said. I don't know a library for that though.
+
+- WebM decoder
+
+Optional and besides, Dreamcast won't be able to decode those even at a low resolution...
+Gamecube might be able but not ideal anyway.
+
+- Custom API frontends
+
+Once the SDL 1.2 port is complete, we will want native PVR, GX, GX2 ports etc...
+
+- Porting to platforms
+
+Game consoles with toolchains that support libcurl
+- Sega Dreamcast (potentially. BBA is supported and newer toolchain has support for Modem too)
+- Gamecube (Only works for hardcoded IPs, no DNS resolver. BBA only. This was confirmed to work though.)
+- Wii (libcurl precompiled binary provided. DNS resolver is available as a patch)
+- WiiU
+- Switch
+
+Need to look further
+- Original Xbox (will work over Linux but native might not work)
+- Classic Mac OS (old libcurl might work)
+- Sony PS2 (is the network adapter even supported ?)
+- PS3 without OtherOS
+- Sony PSP
+- PS Vita (apparently is the case)
+
+Not supported right now
+- Megadrive with WIFI cartridge
+The provided example can do some neat stuff but this would need a custom solution.
+Also, we would need some other way to convert the images.
+We could make our own proxy of sorts to take care of that but that makes things more complex...
+Not worth bothering
+
+- Sega Saturn
+There is a modem for it and people are looking into separating the XBAND library as standalone.
+Once this is done, we might look into it. For now, not possible.
+
+- Xbox 360
+This should be possible but isn't worth it.
