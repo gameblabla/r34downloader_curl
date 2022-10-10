@@ -1,18 +1,7 @@
 SDL GUI TODO LIST
 ==================
 
-- Animated GIF support
-
-Enough said. I don't know a library for that though.
-
-- MP4/WebM decoder
-
-Optional and besides, Dreamcast won't be able to decode those even at a low resolution...
-Gamecube might be able but not ideal anyway.
-
-- Custom API frontends
-
-Once the SDL 1.2 port is complete, we will want native PVR, GX, GX2 ports etc...
+Aside from the ports, everything else is pretty low on my list.
 
 - Porting to platforms
 
@@ -44,3 +33,17 @@ Once this is done, we might look into it. For now, not possible.
 
 - Xbox 360
 This should be possible but isn't worth it.
+
+- Animated GIF support
+
+Enough said. I don't know a library for that though.
+
+- MP4/WebM decoder
+
+Optional and besides, Dreamcast won't be able to decode those even at a low resolution...
+Gamecube might be able but not ideal anyway.
+
+- Custom API frontends
+
+Once the SDL 1.2 port is complete, we will want native PVR, GX, GX2 ports etc...
+

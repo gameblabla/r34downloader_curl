@@ -1,5 +1,7 @@
-Rule34downloader_curl
+Rule34downloader_curl/R34SDL
 ======================
+
+![R34SDL](https://raw.githubusercontent.com/gameblabla/r34downloader_curl/master/r34gui_main.png)
 
 I got the idea of making this after seeing https://github.com/sunx2/r34py.
 
