@@ -25,8 +25,10 @@ int player_y = 0;
 int delay_input = 0;
 int Game_State = 0;
 
+int current_thumbnail_page = 0;
+int current_overall_page = 0;
 
-
+/* Used for virtual keyboard */
 char rows_of_text[3][27] = 
 {
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -160,15 +162,19 @@ void Draw_Cursor()
 	Put_image(510, player_x, player_y);
 }
 
-void Download_Images(int page_number, int offset_start, int offset_max)
+void Download_Images(int page_number, int overall_page, int offset_start, int offset_max, int type)
 {
 	int i;
 	size_t sz;
 	char* str;
+	
 	Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);
 	Print_text(32, 120, 20, "Downloading images on page...");
 	Print_text(32, 180, 20, "Please wait !");
 	Update_video();
+
+	printf("offset_start %d\n", offset_start);
+	printf("offset_max %d\n", offset_max);
 
 	printf("Tag is %s\n", text_buffer);
 	snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/1", text_buffer);
@@ -189,22 +195,33 @@ void Download_Images(int page_number, int offset_start, int offset_max)
 	// Don't redownload cached HTML file again
 	if (access(tmp_str, F_OK) != 0)
 	{
+		printf("Let's DL\n");
 		/* We need to download the first page to determine how many pages are available */
-		Download_file(tag_str, tmp_str, page_number);
+		Download_file(tag_str, tmp_str, 0);
 	}
 	sz = Get_Filesize(tmp_str);
 	str = Read_File(tmp_str, sz);
 	/* From the first page, determine how many pages are available for the tag */
 	pages = Determine_Number_Pages(str, sz);
 
-	Read_HTMLFile(str, sz, 0, offset_start, offset_max, 1);
+	Read_HTMLFile(str, sz, 0, offset_start, offset_max, type);
 
-	Game_State = 2;
-
-	for(i=0;i<offset_max;i++)
+	if (type == 1)
 	{
-		Load_Image_Stretch(10+i, img_tmp_str[i], 200, 200);
-	}	
+		for(i=offset_start;i<offset_max;i++)
+		{
+			Load_Image_Stretch(10+i, thumbnail_image_filename[i], 200, 200);
+		}	
+	}
+	else
+	{
+		for(i=offset_start;i<offset_max;i++)
+		{
+			Load_Image_Stretch(10+i, image_filename[i], 200, 200);
+		}	
+	}
+		
+	Game_State = 2;
 }
 		
 int main(int argc, char** argv)
@@ -244,11 +261,13 @@ int main(int argc, char** argv)
 				
 				Move_Cursor();
 				Draw_Cursor();
+				
+				current_thumbnail_page = 1;
 
 			break;
 			case 1:
 				// First page, from 0 to 6
-				Download_Images(0, 0, 6);
+				Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 0);
 			break;
 			case 2:
 				Faster_clearing(0, 0, 640, 480, WHITE_COLOR_BG);
@@ -257,6 +276,18 @@ int main(int argc, char** argv)
 				{
 					Put_image(10 + i, 10 + (i * 210), 40);
 					Put_image(13 + i, 10 + (i * 210), 250);
+				}
+				
+				if (BUTTON.X && current_thumbnail_page > 0) // Previous
+				{
+					current_thumbnail_page-= 1;
+					Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
+				}
+				
+				if (BUTTON.Y) // Previous
+				{
+					current_thumbnail_page+= 1;
+					Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
 				}
 
 				Move_Cursor();

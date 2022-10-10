@@ -6,8 +6,12 @@ struct input
 	unsigned char DOWN;
 	unsigned char A;
 	unsigned char B;
-	unsigned char C;
-	unsigned char D;
+	unsigned char X;
+	unsigned char Y;
+	
+	unsigned char L;
+	unsigned char R;
+	
 	unsigned char START;
 	unsigned char SELECT;
 	unsigned char QUIT;

@@ -16,7 +16,7 @@ int done = 0;
 void Init_Video()
 {
 	SDL_Init( SDL_INIT_VIDEO );
-	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);	
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE);	
 }
 
 void Load_Image(unsigned short a, const char* directory)
@@ -28,7 +28,7 @@ void Load_Image(unsigned short a, const char* directory)
 	}
 	tmp = IMG_Load(directory);
 	SDL_SetColorKey(tmp, (SDL_SRCCOLORKEY | SDL_RLEACCEL), SDL_MapRGB(tmp->format, 255, 0, 255));
-	sprites_img[a] = SDL_DisplayFormat(tmp);
+	sprites_img[a] = SDL_DisplayFormatAlpha(tmp);
 	SDL_FreeSurface(tmp);
 }
 
@@ -53,8 +53,8 @@ void Load_Image_Stretch(unsigned short a, const char* directory, short w, short 
 	tmp = IMG_Load(directory);
 	position.w = tmp->w;
 	position.h = tmp->h;
-	sprites_img[a] = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 16, 0,0,0,0);
-	tmp2 = SDL_DisplayFormat(tmp);
+	sprites_img[a] = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0,0,0,0);
+	tmp2 = SDL_DisplayFormatAlpha(tmp);
 	//sprites_img[a] = SDL_DisplayFormat(tmp2);
 	int err = SDL_SoftStretch(tmp2, &position, sprites_img[a], &frame);
 	if (err < 0)
@@ -148,8 +148,10 @@ void Controls()
 		
 		BUTTON.A = (keystate[Buttons_A] || joy_b[Joypad_A]) ? 1 : 0;
 		BUTTON.B = (keystate[Buttons_B] || joy_b[Joypad_B]) ? 1 : 0;
-		BUTTON.C = (keystate[Buttons_C] || joy_b[Joypad_C]) ? 1 : 0;
-		BUTTON.D = (keystate[Buttons_D] || joy_b[Joypad_D]) ? 1 : 0;
+		BUTTON.X = (keystate[Buttons_X] || joy_b[Joypad_X]) ? 1 : 0;
+		BUTTON.Y = (keystate[Buttons_Y] || joy_b[Joypad_Y]) ? 1 : 0;
+		BUTTON.L = (keystate[Buttons_L] || joy_b[Joypad_L]) ? 1 : 0;
+		BUTTON.R = (keystate[Buttons_R] || joy_b[Joypad_R]) ? 1 : 0;
 		BUTTON.START = (keystate[Buttons_START] || joy_b[Joypad_START]) ? 1 : 0;
 		BUTTON.SELECT = (keystate[Buttons_SELECT] || joy_b[Joypad_SELECT]) ? 1 : 0;
 		BUTTON.QUIT = keystate[Buttons_QUIT] ? 1 : 0;

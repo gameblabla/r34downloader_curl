@@ -167,8 +167,6 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 	// For for... checks with thumbnails or real file names (see below)
 	char* cur_filename;
 	char* cur_links;
-
-	
 	match = 0;
 
 	/* This is the code that crawls through the HTTP file and tries to find the magic 
@@ -236,7 +234,7 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 			thumbnail_image_links[a][i] = string[thumbnail_occurances[a]+i];
 		}
 		
-		printf("URL link : %s\n", thumbnail_image_links[a]);
+		//printf("URL link : %s\n", thumbnail_image_links[a]);
 	}
 	
 	/* Strip the array in order to only keep the filename of the file */
@@ -244,10 +242,10 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 	{
 		result = Find_last_character(image_links[a], 256, '/');
 		tmp_str = Return_String(image_links[a], 256, result);
-		snprintf(image_filename[a], 256-result, "img/%s", tmp_str);
-		snprintf(thumbnail_image_filename[a], 256-result, "thumb/%s", tmp_str);
+		snprintf(image_filename[a], 256-result, "img%s", tmp_str);
+		
+		snprintf(thumbnail_image_filename[a], 256-result, "thumb/page%d-%d-thumb.jpg", pa, a);
 		free(tmp_str);
-		//printf("Filename : %s\n", image_filename[a]);
 	}
 	
 	/* If an end offset is set, set it to that. otherwise, download everything. */
@@ -276,6 +274,7 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 			cur_links = image_links[a];
 		}
 		
+
 		Update_Progress(a, new_match, match, cur_filename);
 		// Don't download the image again if it's already downloaded/cached
 		if (access(cur_filename, F_OK) != 0)
@@ -285,11 +284,11 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 	}
 	
 	/* Make sure to empty the arrays to 0 to avoid leftovers */
-	for(a=offset_start;a<new_match;a++)
+	/*for(a=offset_start;a<new_match;a++)
 	{
 		memset(image_links[a], 0, sizeof(image_links[a]));
 		memset(image_filename[a], 0, sizeof(image_filename[a]));
-	}
+	}*/
 }
 
 /* This was slightly more tricky than i expected because i need to convert them to decimals

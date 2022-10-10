@@ -22,18 +22,25 @@ extern SDL_Surface *screen;
 #define Buttons_DOWN SDLK_DOWN
 #define Buttons_A SDLK_x
 #define Buttons_B SDLK_c
-#define Buttons_C SDLK_v
-#define Buttons_D SDLK_b
+#define Buttons_X SDLK_v
+#define Buttons_Y SDLK_b
+
+#define Buttons_L SDLK_BACKSPACE
+#define Buttons_R SDLK_RETURN
+
 #define Buttons_START SDLK_SPACE
 #define Buttons_SELECT SDLK_BACKSPACE
 #define Buttons_QUIT SDLK_ESCAPE
 
 #define Joypad_A 0 
 #define Joypad_B 1
-#define Joypad_C 2
-#define Joypad_D 3
+#define Joypad_X 2
+#define Joypad_Y 3
+#define Joypad_L 4
+#define Joypad_R 5
+#define Joypad_SELECT 6
 #define Joypad_START 7
-#define Joypad_SELECT 5 
+
 
 extern struct input BUTTON;
 
