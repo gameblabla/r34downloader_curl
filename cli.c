@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 		snprintf(page_str, sizeof(page_str), "tmp/%s-page%d.html", argv[1], i);
 		printf("Downloading Images in Page %d\n", i);
 		str = Read_File(page_str, sz);
-		Read_HTMLFile(str, sz, i, 0, 0, thumbnail_download);
+		Read_HTMLFile(str, sz, i, 0, 0, thumbnail_download, argv[1]);
 	}
 	
 	printf("Done !\nYou can find your images in the img folder !\nEnjoy fapping to them.\n");

@@ -32,7 +32,7 @@ extern int Get_Filesize(const char* filepath);
 extern char* Read_File(const char* filepath, int size);
 extern char* Return_String(char* str, int size, int beginning);
 extern int Find_last_character(char* str, int size, char character);
-extern void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, int thumbnail_dl);
+extern void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, int thumbnail_dl, char* tag);
 extern int Determine_Number_Pages(char* string, int size);
 
 #endif

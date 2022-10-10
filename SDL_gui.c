@@ -213,7 +213,7 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 	/* From the first page, determine how many pages are available for the tag */
 	pages = Determine_Number_Pages(str, sz);
 
-	Read_HTMLFile(str, sz, overall_page, offset_start, offset_max, type);
+	Read_HTMLFile(str, sz, overall_page, offset_start, offset_max, type, text_buffer);
 	
 	for(i=0;i<6;i++)
 	{
@@ -222,7 +222,6 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 
 	if (type == 1)
 	{
-		printf("offset_max-offset_start %d\n", offset_max);
 		for(i=0;i<offset_max-offset_start;i++)
 		{
 			Load_Image_Stretch(10+i, thumbnail_image_filename[offset_start+i], 200, 200);
@@ -241,6 +240,7 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 		
 int main(int argc, char** argv)
 {
+	char tmpp[256];
 	int i;
 
 	Init_Video();
@@ -249,6 +249,9 @@ int main(int argc, char** argv)
 	
 	Load_Image(510, "internal_img/cursor.bmp");
 	Load_Image(511, "internal_img/font.bmp");
+				
+	current_thumbnail_page = 0;
+	current_overall_page = 0;
 
 	while(!BUTTON.QUIT)
 	{
@@ -267,6 +270,7 @@ int main(int argc, char** argv)
 				
 				delay_input++;
 				
+				Print_text(32, 20, 20, "R34 App");
 				Print_text(32, 50, 20, "Search for a character");
 				
 				// Print text that's in buffer
@@ -276,9 +280,6 @@ int main(int argc, char** argv)
 				
 				Move_Cursor();
 				Draw_Cursor();
-				
-				current_thumbnail_page = 0;
-				current_overall_page = 0;
 			break;
 			case 1:
 				// First page, from 0 to 6
@@ -292,7 +293,16 @@ int main(int argc, char** argv)
 					Put_image(10 + i, 10 + (i * 210), 40);
 					Put_image(13 + i, 10 + (i * 210), 250);
 				}
-
+				
+				
+				// Display rag
+				Print_text(20, 0, 20, text_buffer);
+				
+				snprintf(tmpp, sizeof(tmpp), "Page : %d", current_overall_page+1);
+				Print_text(20, 20, 20, tmpp);
+				snprintf(tmpp, sizeof(tmpp), "%d/%d", current_thumbnail_page*6, total_images);
+				Print_text(540, 20, 20, tmpp);
+				
 				Move_Cursor();
 				Draw_Cursor();
 				
@@ -312,7 +322,7 @@ int main(int argc, char** argv)
 					}
 					else if (BUTTON.Y) // Previous
 					{
-						if (current_thumbnail_page < 11)
+						if (current_thumbnail_page < total_images / 6)
 						{
 							current_thumbnail_page+= 1;
 							printf("current_thumbnail_page %d\n", current_thumbnail_page);
@@ -339,6 +349,11 @@ int main(int argc, char** argv)
 							current_thumbnail_page = 0;
 							Game_State = 1;
 						}
+						delay_input = 0;
+					}
+					else if (BUTTON.B) // Go back to Search
+					{
+						Game_State = 0;
 						delay_input = 0;
 					}
 				}

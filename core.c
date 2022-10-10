@@ -157,7 +157,7 @@ int Find_last_character(char* str, int size, char character)
 /* The main function C:, deals with detecting where the links are, filling them in memory and then proceed to download them 
  * For multiple pages, we'll just put this in a loop.
  * */
-void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, int thumbnail_dl)
+void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, int thumbnail_dl, char* tag)
 {
 	int i, a;
 	int match, new_match;
