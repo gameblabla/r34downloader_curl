@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "core.h"
+#include "common.h"
 
 int state_gui = 0;
 
@@ -42,6 +43,7 @@ void Download_file(const char* url, const char* file_name, int tor)
 	
 	handle = curl_easy_init();
 	
+#ifndef NO_TOR
 	if (tor > 0)
 	{
 		/* It's safer to use Socks4a for Tor as Socks5 might leak DNS without some proper handling */
@@ -56,9 +58,11 @@ void Download_file(const char* url, const char* file_name, int tor)
 			break;
 		}
 	}
+#endif
 
 	curl_easy_setopt( handle, CURLOPT_URL, url ) ;
-	
+
+/* You can enable this if you live in a free country... I don't : ( */
 #ifndef NO_DNS_DOH
 	curl_easy_setopt(handle, CURLOPT_DOH_URL, "https://doh.opendns.com/dns-query");
 #endif
@@ -243,9 +247,9 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 	{
 		result = Find_last_character(image_links[a], 256, '/');
 		tmp_str = Return_String(image_links[a], 256, result);
-		snprintf(image_filename[a], 256-result, "img%s", tmp_str);
+		snprintf(image_filename[a], 256-result, IMG_DIRECTORY"%s", tmp_str);
 		
-		snprintf(thumbnail_image_filename[a], 256-result, "thumb/page%d-%d-thumb.jpg", pa, a);
+		snprintf(thumbnail_image_filename[a], 256-result, THUMB_DIRECTORY"/page%d-%d-thumb.jpg", pa, a);
 		free(tmp_str);
 	}
 	

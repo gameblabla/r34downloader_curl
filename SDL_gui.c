@@ -196,11 +196,11 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 	 * img is for the permanent image folder
 	 * tmp is for the HTML files
 	*/
-	create_directory("img", 0755);
-	create_directory("thumb", 0755);
-	create_directory("tmp", 0755);
+	create_directory(IMG_DIRECTORY, 0755);
+	create_directory(THUMB_DIRECTORY, 0755);
+	create_directory(TMP_DIRECTORY, 0755);
 
-	snprintf(tmp_str, sizeof(tmp_str), "tmp/%s-page%d.html", text_buffer, overall_page);
+	snprintf(tmp_str, sizeof(tmp_str), TMP_DIRECTORY"/%s-page%d.html", text_buffer, overall_page);
 	// Don't redownload cached HTML file again
 	if (access(tmp_str, F_OK) != 0)
 	{
@@ -270,7 +270,7 @@ int main(int argc, char** argv)
 				
 				delay_input++;
 				
-				Print_text(32, 20, 20, "R34 App");
+				Print_text(32, 20, 20, "R34SDL");
 				Print_text(32, 50, 20, "Search for a character");
 				
 				// Print text that's in buffer

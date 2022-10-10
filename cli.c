@@ -71,12 +71,12 @@ int main(int argc, char** argv)
 	}
 	
 	/* Create Folder img for storing our images and tmp for the html files */
-	create_directory("img", 0755);
-	create_directory("thumb", 0755);
-	create_directory("tmp", 0755);
+	create_directory(IMG_DIRECTORY, 0755);
+	create_directory(THUMB_DIRECTORY, 0755);
+	create_directory(TMP_DIRECTORY, 0755);
 	
 	/* We need to download the first page to determine how many pages are available */
-	snprintf(page_str, sizeof(page_str), "tmp/%s-page1.html", argv[1]);
+	snprintf(page_str, sizeof(page_str), TMP_DIRECTORY"/%s-page1.html", argv[1]);
 	Download_file(tag_str, page_str, tor) ;
 	sz = Get_Filesize(page_str);
 	str = Read_File(page_str, sz);
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		{
 			printf("Progress : %d/%d\n", i, pages);
 			snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "post/list/%s/%d", argv[1], i);
-			snprintf(page_str, sizeof(page_str), "tmp/%s-page%d.html", argv[1], i);
+			snprintf(page_str, sizeof(page_str), TMP_DIRECTORY"/%s-page%d.html", argv[1], i);
 			Download_file(tag_str, page_str, tor) ;
 		}
 	}
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 	/* If there are more than 1 page, then we will proceed to download each one of them. */
 	for(i=1;i<=pages;i++)
 	{
-		snprintf(page_str, sizeof(page_str), "tmp/%s-page%d.html", argv[1], i);
+		snprintf(page_str, sizeof(page_str), TMP_DIRECTORY"/%s-page%d.html", argv[1], i);
 		printf("Downloading Images in Page %d\n", i);
 		str = Read_File(page_str, sz);
 		Read_HTMLFile(str, sz, i, 0, 0, thumbnail_download, argv[1]);
