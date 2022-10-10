@@ -1,5 +1,5 @@
 Rule34downloader_curl
-===========
+======================
 
 I got the idea of making this after seeing https://github.com/sunx2/r34py.
 
@@ -21,11 +21,3 @@ Since this uses CURL, it should also be able to make use of the http_proxy & htt
 The images will be downloaded to the folder img.
 
 This took me at least half a day to implement it.
-
-
-TODO
-=====
-
-Make a GUI interface (using SDL) so that it can be ported to other platforms. 
-
-(like the OpenPandora, GCW Zero or even the Dreamcast, provided that a port of cURL is available)

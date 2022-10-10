@@ -8,7 +8,7 @@
 
 #include "core.h"
 
-void Update_Progress(int a, int match)
+void Update_Progress(int a, int match, int all_match, char* img_filename)
 {
 	printf("Progress : %d/%d\n", a, match);	
 }
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 		snprintf(page_str, sizeof(page_str), "tmp/page%d.html", i);
 		printf("Downloading Images in Page %d\n", i);
 		str = Read_File(page_str, sz);
-		Read_HTMLFile(str, sz, i);
+		Read_HTMLFile(str, sz, i, 0, 0);
 	}
 	
 	printf("Done !\nYou can find your images in the img folder !\nEnjoy fapping to them.\n");
