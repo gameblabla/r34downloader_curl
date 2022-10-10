@@ -20,9 +20,10 @@ int main(int argc, char** argv)
 	int i;
 	char tag_str[256];
 	char page_str[128];
+	int thumbnail_download = 0;
 	
 	printf("Rule34CurlC image downloader by Gameblabla\n");
-	printf("This is very unoptimised but it has\nminimal dependencies so it should be fairly portable.\n\n");
+	printf("This is very unoptimised but it has\nminimal dependencies so it should be fairly portable.\n\nFor example, ./rule34curl Mario f c\n");
 	
 	if (argv[1] == NULL)
 	{
@@ -37,29 +38,47 @@ int main(int argc, char** argv)
 		printf("Link : %s\n", tag_str);
 	}
 
-	if (argc > 2)
+	if (argc > 3)
 	{
-		if (argv[2][1] == 'b' && argv[2][0] == 't')
+		if (argv[3][1] == 'b' && argv[3][0] == 't')
 		{
 			printf("Tor proxy (Browser, port 9150)\n\n");
 			tor = 2;	
 		}
-		else if (argv[2][0] == 't')
+		else if (argv[3][0] == 't')
 		{
 			printf("Tor proxy (port 9050)\n\n");
 			tor = 1;
+		}
+		else if (argv[3][0] == 'c')
+		{
+			printf("Clearnet (with DNS over HTTPS if support is compiled in)\n\n");
+		}
+	}
+	
+	if (argc > 2)
+	{
+		if (argv[2][0] == 't')
+		{
+			printf("Download thumbnails instead\n\n");
+			thumbnail_download = 1;
+		}
+		else if (argv[2][0] == 'f')
+		{
+			printf("Download full pictures instead\n\n");
 		}
 	}
 	
 	/* Create Folder img for storing our images and tmp for the html files */
 	create_directory("img", 0755);
+	create_directory("thumb", 0755);
 	create_directory("tmp", 0755);
 	
 	/* We need to download the first page to determine how many pages are available */
-	Download_file(tag_str, "tmp/page1.html", tor) ;
-
-	sz = Get_Filesize("tmp/page1.html");
-	str = Read_File("tmp/page1.html", sz);
+	snprintf(page_str, sizeof(page_str), "tmp/%s-page1.html", argv[1]);
+	Download_file(tag_str, page_str, tor) ;
+	sz = Get_Filesize(page_str);
+	str = Read_File(page_str, sz);
 
 	/* From the first page, determine how many pages are available for the tag */
 	pages = Determine_Number_Pages(str, sz);
@@ -72,7 +91,7 @@ int main(int argc, char** argv)
 		{
 			printf("Progress : %d/%d\n", i, pages);
 			snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/%d", argv[1], i);
-			snprintf(page_str, sizeof(page_str), "tmp/page%d.html", i);
+			snprintf(page_str, sizeof(page_str), "tmp/%s-page%d.html", argv[1], i);
 			Download_file(tag_str, page_str, tor) ;
 		}
 	}
@@ -81,10 +100,10 @@ int main(int argc, char** argv)
 	/* If there are more than 1 page, then we will proceed to download each one of them. */
 	for(i=1;i<=pages;i++)
 	{
-		snprintf(page_str, sizeof(page_str), "tmp/page%d.html", i);
+		snprintf(page_str, sizeof(page_str), "tmp/%s-page%d.html", argv[1], i);
 		printf("Downloading Images in Page %d\n", i);
 		str = Read_File(page_str, sz);
-		Read_HTMLFile(str, sz, i, 0, 0);
+		Read_HTMLFile(str, sz, i, 0, 0, thumbnail_download);
 	}
 	
 	printf("Done !\nYou can find your images in the img folder !\nEnjoy fapping to them.\n");

@@ -182,6 +182,7 @@ void Download_Images(int page_number, int offset_start, int offset_max)
 	 * tmp is for the HTML files
 	*/
 	create_directory("img", 0755);
+	create_directory("thumb", 0755);
 	create_directory("tmp", 0755);
 
 	snprintf(tmp_str, sizeof(tmp_str), "tmp/%s-page%d.html", text_buffer, page_number);
@@ -196,7 +197,7 @@ void Download_Images(int page_number, int offset_start, int offset_max)
 	/* From the first page, determine how many pages are available for the tag */
 	pages = Determine_Number_Pages(str, sz);
 
-	Read_HTMLFile(str, sz, 0, offset_start, offset_max);
+	Read_HTMLFile(str, sz, 0, offset_start, offset_max, 1);
 
 	Game_State = 2;
 
@@ -246,6 +247,7 @@ int main(int argc, char** argv)
 
 			break;
 			case 1:
+				// First page, from 0 to 6
 				Download_Images(0, 0, 6);
 			break;
 			case 2:

@@ -15,6 +15,13 @@ int occurances[256];
 char image_links[256][512];
 /* This will store our filename, we can't assign the URLs as the filename*/
 char image_filename[256][512];
+
+/* Same but for thumbnails */
+char thumbnail_image_links[256][512];
+char thumbnail_image_filename[256][512];
+int thumbnail_occurances[256];
+
+
 const char ascii_chars[11] = {'0', '1', '2', '3','4','5','6','7','8','9'};
 
 int tor = 0;
@@ -149,14 +156,18 @@ int Find_last_character(char* str, int size, char character)
 /* The main function C:, deals with detecting where the links are, filling them in memory and then proceed to download them 
  * For multiple pages, we'll just put this in a loop.
  * */
-void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end)
+void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, int thumbnail_dl)
 {
 	int i, a;
-	int match;
+	int match, new_match;
+	int thumbnail_match, thumbnail_new_match;
 	unsigned short result;
 	char* tmp_str;
 	
-	int new_match;
+	// For for... checks with thumbnails or real file names (see below)
+	char* cur_filename;
+	char* cur_links;
+
 	
 	match = 0;
 
@@ -181,6 +192,22 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 		}
 	}
 	
+	// Now do the same for thumbnails
+	thumbnail_match = 0;
+	for(i=1;i<size;i++)
+	{
+		if (string[i] == '/')
+		{
+			
+			if (string[i+1] == '_' && string[i+2] == 't' && string[i-31] == '"')
+			{
+				thumbnail_occurances[thumbnail_match] = i-24;
+				thumbnail_match ++;
+				//printf("Found Image Link at %d\n", i);
+			}
+		}
+	}
+	
 	printf("%d Images were found on Page %d, downloading them\n", match, pa);
 
 	/* Since we now know where each of our URLs are in the HTML file, we'll just set them to each position (where they were detecting) and
@@ -189,6 +216,8 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 	for(a=0;a<match;a++)
 	{
 		image_links[a][0] = string[occurances[a]];
+		thumbnail_image_links[a][0] = string[thumbnail_occurances[a]];
+		
 		for(i=1;i<256;i++)
 		{
 			if (string[occurances[a]+i] == '"' && string[occurances[a]+i+1] == '>')
@@ -197,7 +226,17 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 			}
 			image_links[a][i] = string[occurances[a]+i];
 		}
-		//printf("URL link : %s\n", image_links[a]);
+		
+		for(i=1;i<256;i++)
+		{
+			if (string[thumbnail_occurances[a]+i] == '"')
+			{
+				break;
+			}
+			thumbnail_image_links[a][i] = string[thumbnail_occurances[a]+i];
+		}
+		
+		printf("URL link : %s\n", thumbnail_image_links[a]);
 	}
 	
 	/* Strip the array in order to only keep the filename of the file */
@@ -206,6 +245,7 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 		result = Find_last_character(image_links[a], 256, '/');
 		tmp_str = Return_String(image_links[a], 256, result);
 		snprintf(image_filename[a], 256-result, "img/%s", tmp_str);
+		snprintf(thumbnail_image_filename[a], 256-result, "thumb/%s", tmp_str);
 		free(tmp_str);
 		//printf("Filename : %s\n", image_filename[a]);
 	}
@@ -215,15 +255,32 @@ void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_
 	if (offset_end != 0)
 	{
 		new_match = offset_end;
+		// Make sure it doesn't go above what was actually found
+		if (new_match > match)
+		{
+			new_match = match;
+		}
 	}
 	
 	for(a=offset_start;a<new_match;a++)
 	{
-		Update_Progress(a, new_match, match, image_filename[a]);
-		// Don't download the image again if it's already downloaded/cached
-		if (access(image_filename[a], F_OK) != 0)
+		/* Download thumbnails or the bigger pictures instead ?*/
+		if (thumbnail_dl == 1)
 		{
-			Download_file(image_links[a], image_filename[a], tor) ;
+			cur_filename = thumbnail_image_filename[a];
+			cur_links = thumbnail_image_links[a];
+		}
+		else
+		{
+			cur_filename = image_filename[a];
+			cur_links = image_links[a];
+		}
+		
+		Update_Progress(a, new_match, match, cur_filename);
+		// Don't download the image again if it's already downloaded/cached
+		if (access(cur_filename, F_OK) != 0)
+		{
+			Download_file(cur_links, cur_filename, tor) ;
 		}
 	}
 	

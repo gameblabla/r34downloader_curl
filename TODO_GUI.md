@@ -1,24 +1,11 @@
 SDL GUI TODO LIST
 ==================
 
-- Thumbnails
-Make it so it downloads the thumbnails instead.
-We will still retrieve the links to the full pictures.
-Then, we can download the full picture as an option for the user.
-
-This would have the advantage of not having to download very big images or videos.
-This would also avoid us of accidentally downloading animated GIFs or WebMs files instead and potentially
-causing issues as the website provides thumbnails for those also.
-
-The thumbnails are also a lot more lightweight and for the eventual Dreamcast and Gamecube port,
-this would be a lot smaller to download. (not to mention, less RAM usage for things we actually need)
-This is especially true on the Dreamcast with its modem.
-
 - Animated GIF support
 
 Enough said. I don't know a library for that though.
 
-- WebM decoder
+- MP4/WebM decoder
 
 Optional and besides, Dreamcast won't be able to decode those even at a low resolution...
 Gamecube might be able but not ideal anyway.
