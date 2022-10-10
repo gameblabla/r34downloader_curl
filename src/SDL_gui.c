@@ -6,9 +6,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_ttf.h>
 #include "core.h"
 #include "SDL_gui_lib.h"
 #include "INPUT.h"
@@ -57,7 +54,6 @@ void Delete_Character_Keyboard()
 	size = strlen(text_buffer); //Total size of string
 	if (size > 0)
 	{
-		printf("Removed !\n");
 		text_buffer[size-1] = '\0';
 	}
 	delay_input = 2;
@@ -174,21 +170,14 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 	Print_text(32, 120, 20, "Downloading images on page...");
 	Print_text(32, 180, 20, "Please wait !");
 	Update_video();
-
-	printf("offset_start %d\n", offset_start);
-	printf("offset_max %d\n", offset_max);
 	
 	if (offset_max > 70)
 	{
 		offset_max = 70;
 	}
 
-	printf("Tag is %s\n", text_buffer);
-	
 	/* The +1 is needed as page 0 on the actual website does not exist */
 	snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "/post/list/%s/%d", text_buffer, overall_page+1);
-
-	printf("Current page : %d\n", overall_page);
 
 	// Step 2
 
@@ -204,7 +193,6 @@ void Download_Images(int page_number, int overall_page, int offset_start, int of
 	// Don't redownload cached HTML file again
 	if (access(tmp_str, F_OK) != 0)
 	{
-		printf("Let's DL\n");
 		/* We need to download the first page to determine how many pages are available */
 		Download_file(tag_str, tmp_str, 0);
 	}
@@ -315,7 +303,6 @@ int main(int argc, char** argv)
 						if (current_thumbnail_page > 0)
 						{
 							current_thumbnail_page-= 1;
-							printf("current_thumbnail_page %d\n", current_thumbnail_page);
 							Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
 						}
 						delay_input = 0;
@@ -325,7 +312,6 @@ int main(int argc, char** argv)
 						if (current_thumbnail_page < total_images / 6)
 						{
 							current_thumbnail_page+= 1;
-							printf("current_thumbnail_page %d\n", current_thumbnail_page);
 							Download_Images(current_thumbnail_page, current_overall_page, (6 * current_thumbnail_page), (6 * current_thumbnail_page) + 6, 1);
 						}
 						delay_input = 0;

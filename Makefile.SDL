@@ -1,10 +1,10 @@
 CC = gcc
 
-CFLAGS = -Wall -Wextra -O0 -g3
+CFLAGS = -Wall -Wextra -O0 -g3 -Isrc/sdl12 -Isrc
 LDFLAGS = -lcurl -lSDL -lSDL_image -lSDL_ttf
 OUTPUT = rule34curl
 
-SOURCES = core.c SDL_gui.c SDL_gui_lib.c
+SOURCES = src/core.c src/SDL_gui.c src/sdl12/SDL_gui_lib.c
 OBJS = ${SOURCES:.c=.o}
 
 ${OUTPUT}:${OBJS}

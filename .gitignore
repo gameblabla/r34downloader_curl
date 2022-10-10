@@ -4,3 +4,4 @@ err.txt
 img/
 tmp/
 Makefile.mingw
+*.o
