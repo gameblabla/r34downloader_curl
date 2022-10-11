@@ -26,7 +26,7 @@ int done = 0;
 void Init_Video()
 {
 	SDL_Init( SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER );
-	game_screen = SDL_CreateWindow("R34GUI", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);  
+	game_screen = SDL_CreateWindow("R34GUI", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP);  
 	
 	/* Create renderer, its resolution, set to HARDWARE aceleration and Vsync turned on */
 	renderer = SDL_CreateRenderer(game_screen, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
