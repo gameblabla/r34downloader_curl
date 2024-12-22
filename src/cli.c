@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	else
 	{
 		printf("Tag is %s\n", argv[1]);
-		snprintf(tag_str, sizeof(tag_str), "https://rule34.paheal.net/post/list/%s/1", argv[1]);
+		snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "/post/list/%s/1", argv[1]);
 		
 		printf("Link : %s\n", tag_str);
 	}
@@ -79,6 +79,11 @@ int main(int argc, char** argv)
 	snprintf(page_str, sizeof(page_str), TMP_DIRECTORY"/%s-page1.html", argv[1]);
 	Download_file(tag_str, page_str, tor) ;
 	sz = Get_Filesize(page_str);
+	if (sz < 5)
+	{
+		printf("sz %d, Filesize is 0!\n", sz);
+		return 1;
+	}
 	str = Read_File(page_str, sz);
 
 	/* From the first page, determine how many pages are available for the tag */
@@ -91,7 +96,7 @@ int main(int argc, char** argv)
 		for(i=2;i<=pages;i++)
 		{
 			printf("Progress : %d/%d\n", i, pages);
-			snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "post/list/%s/%d", argv[1], i);
+			snprintf(tag_str, sizeof(tag_str), COMMON_URL_PAGE "/post/list/%s/%d", argv[1], i);
 			snprintf(page_str, sizeof(page_str), TMP_DIRECTORY"/%s-page%d.html", argv[1], i);
 			Download_file(tag_str, page_str, tor) ;
 		}

@@ -5,22 +5,25 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "core.h"
 #include "common.h"
 
 int state_gui = 0;
 
+#define MAX_OCCURANCES 256
+
 /* This will be used to store where our images are in the HTML files */
-int occurances[256];
+int occurances[MAX_OCCURANCES];
 /* This will store our URLs. I've noticed some urls can break the 256 barrier so i increased it to 512. */
-char image_links[256][512];
+char image_links[MAX_OCCURANCES][512];
 /* This will store our filename, we can't assign the URLs as the filename*/
-char image_filename[256][512];
+char image_filename[MAX_OCCURANCES][512];
 
 /* Same but for thumbnails */
-char thumbnail_image_links[256][512];
-char thumbnail_image_filename[256][512];
-int thumbnail_occurances[256];
+char thumbnail_image_links[MAX_OCCURANCES][512];
+char thumbnail_image_filename[MAX_OCCURANCES][512];
+int thumbnail_occurances[MAX_OCCURANCES];
 
 
 const char ascii_chars[11] = {'0', '1', '2', '3','4','5','6','7','8','9'};
@@ -39,6 +42,7 @@ int total_images = 0;
 void Download_file(const char* url, const char* file_name, int tor)
 {
 	FILE* file;
+	int res;
 	CURL* handle;
 	
 	handle = curl_easy_init();
@@ -61,21 +65,34 @@ void Download_file(const char* url, const char* file_name, int tor)
 #endif
 
 	curl_easy_setopt( handle, CURLOPT_URL, url ) ;
+	
+	curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
+	
+	curl_easy_setopt(handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
 
 /* You can enable this if you live in a free country... I don't : ( */
 #ifndef NO_DNS_DOH
-	curl_easy_setopt(handle, CURLOPT_DOH_URL, "https://doh.opendns.com/dns-query");
+	curl_easy_setopt(handle, CURLOPT_DOH_URL, "https://cloudflare-dns.com/dns-query");
 #endif
 
-	file = fopen( file_name, "w");
+	file = fopen( file_name, "wb");
 
 	curl_easy_setopt( handle, CURLOPT_WRITEDATA, file) ;
 
-	curl_easy_perform( handle );
+	res = curl_easy_perform(handle);
 
 	curl_easy_cleanup( handle );
 
-	fclose(file);
+   
+    fclose(file);
+
+    /*if (res != CURLE_OK)
+    {
+        // If you want to remove a 0-byte file on error:
+        printf("0 byte file\n");
+        exit(0);
+    }*/
+
 }
 
 /* We need to get the size of our file and also partly to avoid an overflow. */
@@ -161,200 +178,169 @@ int Find_last_character(char* str, int size, char character)
 /* The main function C:, deals with detecting where the links are, filling them in memory and then proceed to download them 
  * For multiple pages, we'll just put this in a loop.
  * */
-void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, int thumbnail_dl, char* tag)
+void Read_HTMLFile(char* string, int size, int pa, int offset_start, int offset_end, 
+                   int thumbnail_dl, char* tag)
 {
-	int i, a;
-	int match, new_match;
-	int thumbnail_match, thumbnail_new_match;
-	unsigned short result;
-	char* tmp_str;
-	
-	// For for... checks with thumbnails or real file names (see below)
-	char* cur_filename;
-	char* cur_links;
-	match = 0;
+    int i, a;
+    int match = 0;
+    int thumbnail_match = 0;
+    int new_match;
+    unsigned short result;
+    char* tmp_str;
+    char temp[512];
 
-	/* This is the code that crawls through the HTTP file and tries to find the magic 
-	 * for image URL links. We must also exclude thumbnails.
-	 * I noticed that the image URL links were not HTTPS protected (bad !) so i'm relying on that.
-	 * When this gets fixed, i'll have to find another way. (Which i'm sure won't be too hard)
-	 * */
-	for(i=1;i<size;i++)
-	{
-		if (string[i] == '<')
-		{
-			if (string[i+1] == 'a' && string[i+3] == 'h')
-			{
-				if (string[i-3] == 'b' && string[i-2] == 'r' && string[i-6] == 'a')
-				{
-					occurances[match] = i+9;
-					match += 1;	
-					//printf("Found Image Link at %d\n", i);
-				}
-			}
-		}
-	}
-	
-	// Now do the same for thumbnails
-	thumbnail_match = 0;
-	for(i=1;i<size;i++)
-	{
-		if (string[i] == '/')
-		{
-			
-			if (string[i+1] == '_' && string[i+2] == 't' && string[i-31] == '"')
-			{
-				thumbnail_occurances[thumbnail_match] = i-24;
-				thumbnail_match ++;
-				//printf("Found Image Link at %d\n", i);
-			}
-		}
-	}
-	
-	printf("%d Images were found on Page %d, downloading them\n", match, pa);
+    // Clear counters
+    match = 0;
+    thumbnail_match = 0;
 
-	/* Since we now know where each of our URLs are in the HTML file, we'll just set them to each position (where they were detecting) and
-	 * fill our array until it encounters ", which means this is the end of the URL and we can proceed to the next URL.
-	*/
-	for(a=0;a<match;a++)
-	{
-		image_links[a][0] = string[occurances[a]];
-		thumbnail_image_links[a][0] = string[thumbnail_occurances[a]];
-		
-		for(i=1;i<256;i++)
-		{
-			if (string[occurances[a]+i] == '"' && string[occurances[a]+i+1] == '>')
-			{
-				break;
-			}
-			image_links[a][i] = string[occurances[a]+i];
-		}
-		
-		for(i=1;i<256;i++)
-		{
-			if (string[thumbnail_occurances[a]+i] == '"')
-			{
-				break;
-			}
-			thumbnail_image_links[a][i] = string[thumbnail_occurances[a]+i];
-		}
-		
-		//printf("URL link : %s\n", thumbnail_image_links[a]);
-	}
-	
-	/* Strip the array in order to only keep the filename of the file */
-	for(a=0;a<match;a++)
-	{
-		result = Find_last_character(image_links[a], 256, '/');
-		tmp_str = Return_String(image_links[a], 256, result);
-		snprintf(image_filename[a], 256-result, IMG_DIRECTORY"%s", tmp_str);
-		
-		snprintf(thumbnail_image_filename[a], 256-result, THUMB_DIRECTORY"/page%d-%d-thumb.jpg", pa, a);
-		free(tmp_str);
-	}
-	
-	/* If an end offset is set, set it to that. otherwise, download everything. */
-	new_match = match;
-	if (offset_end != 0)
-	{
-		new_match = offset_end;
-		// Make sure it doesn't go above what was actually found
-		if (new_match > match)
-		{
-			new_match = match;
-		}
-	}
-	
-	for(a=offset_start;a<new_match;a++)
-	{
-		/* Download thumbnails or the bigger pictures instead ?*/
-		if (thumbnail_dl == 1)
-		{
-			cur_filename = thumbnail_image_filename[a];
-			cur_links = thumbnail_image_links[a];
-		}
-		else
-		{
-			cur_filename = image_filename[a];
-			cur_links = image_links[a];
-		}
-		
+    // 1) Find big image links: look for <a href='https://r34i.paheal-cdn.net/...'>
+    //    This captures the "File Only" links that point to the large version.
+    for(i = 0; i < size; i++)
+    {
+        // Make sure we have enough room to compare safely
+        if (i + 34 < size &&
+            strncmp(&string[i], "<a href='https://r34i.paheal-cdn.net/", 34) == 0)
+        {
+            // 9 = skip "<a href='" part
+            occurances[match] = i + 9;
+            match++;
+            if (match >= MAX_OCCURANCES) break;
+        }
+    }
 
-		Update_Progress(a, new_match, match, cur_filename);
-		// Don't download the image again if it's already downloaded/cached
-		if (access(cur_filename, F_OK) != 0)
-		{
-			Download_file(cur_links, cur_filename, tor) ;
-		}
-	}
-	
-	total_images = match;
-	
-	/* Make sure to empty the arrays to 0 to avoid leftovers */
-	/*for(a=offset_start;a<new_match;a++)
-	{
-		memset(image_links[a], 0, sizeof(image_links[a]));
-		memset(image_filename[a], 0, sizeof(image_filename[a]));
-	}*/
+    // 2) Find thumbnail links: look for src='/_thumbs/...'
+    //    We’ll prepend https://mario.sx to these later.
+    for(i = 0; i < size; i++)
+    {
+        // 13 = length of "src='/_thumbs/"
+        if (i + 13 < size &&
+            strncmp(&string[i], "src='/_thumbs/", 13) == 0)
+        {
+            // 5 = skip "src='"
+            thumbnail_occurances[thumbnail_match] = i + 5;
+            thumbnail_match++;
+            if (thumbnail_match >= MAX_OCCURANCES) break;
+        }
+    }
+
+    printf("%d Images were found on Page %d, downloading them\n", match, pa);
+
+    // 3) Extract the actual links from the HTML buffer
+    //    Then build filenames for each.
+    for(a = 0; a < match; a++)
+    {
+        // Initialize the destination arrays to avoid junk characters
+        memset(image_links[a], 0, sizeof(image_links[a]));
+        memset(thumbnail_image_links[a], 0, sizeof(thumbnail_image_links[a]));
+        memset(image_filename[a], 0, sizeof(image_filename[a]));
+        memset(thumbnail_image_filename[a], 0, sizeof(thumbnail_image_filename[a]));
+
+        // Parse the large image link (r34i.paheal-cdn.net)
+        // Stop at the next quote (') or double-quote (") or string end
+        for(i = 0; i < 255; i++)
+        {
+            char c = string[occurances[a] + i];
+            if (c == '\0' || c == '\'' || c == '\"') break;
+            image_links[a][i] = c;
+        }
+
+        // Parse the thumbnail link (/_thumbs/...)
+        for(i = 0; i < 255; i++)
+        {
+            char c = string[thumbnail_occurances[a] + i];
+            if (c == '\0' || c == '\'' || c == '\"') break;
+            thumbnail_image_links[a][i] = c;
+        }
+
+        // 4) Prepend the domain for thumbnails
+        snprintf(temp, sizeof(temp), COMMON_URL_PAGE"%s", thumbnail_image_links[a]);
+        strcpy(thumbnail_image_links[a], temp);
+
+        // 5) Build the filenames
+        //    For main images, we just take the last chunk after '/' and add ".jpg".
+        result = Find_last_character(image_links[a], 256, '/');
+        tmp_str = Return_String(image_links[a], 256, result);
+        snprintf(image_filename[a], 256, IMG_DIRECTORY"%s.jpg", tmp_str);
+        free(tmp_str);
+
+        // For thumbnail we’re using "page%d-%d-thumb.jpg"
+        snprintf(thumbnail_image_filename[a], 256,
+                 THUMB_DIRECTORY"/page%d-%d-thumb.jpg", pa, a);
+    }
+
+    // 6) Offset logic
+    new_match = match;
+    if (offset_end != 0)
+    {
+        new_match = offset_end;
+        if (new_match > match)
+            new_match = match;
+    }
+
+    // 7) Download loop
+    for(a = offset_start; a < new_match; a++)
+    {
+        char* cur_filename;
+        char* cur_links;
+
+        // Decide if we want to download thumbnails or full images
+        if (thumbnail_dl == 1)
+        {
+            cur_filename = thumbnail_image_filename[a];
+            cur_links    = thumbnail_image_links[a];
+        }
+        else
+        {
+            cur_filename = image_filename[a];
+            cur_links    = image_links[a];
+        }
+
+        Update_Progress(a, new_match, match, cur_filename);
+
+        // Download only if not present
+        if (access(cur_filename, F_OK) != 0)
+        {
+            Download_file(cur_links, cur_filename, tor);
+        }
+    }
+
+    // Keep track of total images for later use
+    total_images = match;
 }
 
-/* This was slightly more tricky than i expected because i need to convert them to decimals
- * before we can process it and it was slightly more involved than i expected.
- * */
-int Determine_Number_Pages(char* string, int size)
-{
-	int i, a, c;
-	char tmp[5];
-	int n[5], size_n = 0, truenumber = 0;
-	
-	/* 
-	 * This is the code that crawls through the HTTP file and tries to find the word "Last".
-	 * This is the only way to determine how many pages there are available for the tag.
-	*/
-	for(i=1;i<size;i++)
-	{
-		if (string[i] == 'L')
-		{
-			if (string[i+4] == '<')
-			{
-				if (string[i-2] == '"')
-				{
-					/* There may be more than 9 pages so this handles the reading of 2 numbers in the HTML file (buffer) */
-					for(c=0;c<3;c++)
-					{
-						if (string[i-(3+c)] == '/') break;
-						
-						tmp[c] = string[i-(3+c)];
-						for(a=0;a<10;a++)
-						{
-							if (tmp[c] == ascii_chars[a])
-							{
-								n[c] = a;
-								size_n++;
-							}
-						}
-					}
 
-					if (size_n == 2)
-					{
-						truenumber = n[0] + n[1]*10;
-					}
-					else if (size_n == 3)
-					{
-						truenumber = n[0] + n[1]*10 + n[2]*100;
-					}
-					else
-					{
-						truenumber = n[0];
-					}
-					printf("Number of Pages %d\n", truenumber);
-					return truenumber;
-				}
-			}
-		}
-	}
-	
-	printf("Only 1 Page was found\n");
-	
-	return 1;
+/* Retrieves total number of pages according to Last which implicitely tells us how many there are */
+int Determine_Number_Pages(char* html, int size)
+{
+    char *last_ptr = strstr(html, ">Last</a>");
+    if (!last_ptr) return 1;
+
+    char *search_str = "href='/post/list/";
+    char *p = last_ptr;
+    char *found = NULL;
+
+    while (p >= html) {
+        char *maybe = strstr(p, search_str);
+        if (maybe && maybe < last_ptr) {
+            found = maybe;
+            break;
+        }
+        if (p == html) break;
+        p--;
+    }
+
+    if (!found) return 1;
+    found += strlen(search_str);
+
+    while (*found && *found != '/') found++;
+    if (!*found) return 1;
+    found++;
+
+    int pages = 0;
+    while (*found && isdigit((unsigned char)*found)) {
+        pages = pages * 10 + (*found - '0');
+        found++;
+    }
+
+    return pages == 0 ? 1 : pages;
 }
